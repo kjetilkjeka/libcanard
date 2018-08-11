@@ -1,3 +1,7 @@
+#include <stdbool.h>
+
+#include "canard.h"
+
 #ifndef CANARD_MCAN_H_
 #define CANARD_MCAN_H_
 
@@ -45,6 +49,28 @@ extern "C"
 #define CANARD_MCAN_CAN1       ((volatile CanardMcan*)0x40034000)
 
 
+/* API types */
+enum CanardMcanStatusCode {
+	CANARD_MCAN_STATUS_OK = 0,
+	CANARD_MCAN_STATUS_BUFFER_FULL = -1,
+	CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH = -2,
+
+	/* CAN-FD support is not compiled in. Set `CANARD_MCAN_FD_SUPPORT` to `true` fix this */
+	CANARD_MCAN_STATUS_NO_FD_SUPPORT = -3,
+	
+	/* Found a CAN2.0A (Base-ID) frame when something else was expected */
+	CANARD_MCAN_STATUS_UNEXPECTED_BASE_ID_2_FRAME = -4,
+
+	/* Found a CAN2.0B (Extended-ID) frame when something else was expected */
+	CANARD_MCAN_STATUS_UNEXPECTED_EXTENDED_ID_2_FRAME = -5,
+	
+	/* Found a CAN-FD Base-ID frame when something else was expected */
+	CANARD_MCAN_STATUS_UNEXPECTED_BASE_ID_FD_FRAME = -6,
+	
+	/* Found a CAN-FD Extended-ID frame when something else was expected */
+	CANARD_MCAN_STATUS_UNEXPECTED_EXTENDED_ID_FD_FRAME = -7,
+};
+
 struct CanardMcanTimingConfiguration {
 	uint32_t seg2:7;
 	uint32_t :1;
@@ -53,6 +79,9 @@ struct CanardMcanTimingConfiguration {
 	uint32_t sjw:7;
 };
 
+struct CanardMcanConfiguration {
+	struct CanardMcanTimingConfiguration timing;	
+};
  
 typedef struct {
 	volatile uint32_t	CREL;			///< 0x00 - (MCAN) Core Release Register
@@ -108,6 +137,23 @@ typedef struct {
 	volatile uint32_t	TXEFS;			///< 0xF4 - (MCAN) Transmit Event FIFO Status Register
 	volatile uint32_t	TXEFA;			///< 0xF8 - (MCAN) Transmit Event FIFO Acknowledge Register
 } CanardMcan;
+
+
+/* API functions */
+
+/* Initialize the can controller to set configurations */
+int16_t canardMcanInit(volatile CanardMcan* interface, struct CanardMcanConfiguration const config);
+
+/* Transmit a CanardCANFrame as a CAN2.0B frame */ 
+int16_t canardMcanTransmit(volatile CanardMcan* interface, const CanardCANFrame* const frame);
+
+/* A more general transmit function that allows transmitting FD frames or frames with base ID (!extended_id).
+ *
+ * If `can_fd` is set, frame.data_len must be less than or equal 64 and be a supported `data_len` (1..8, 12, 16, 20, 24, 32, 48 or 64).
+ */ 
+int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFrame* const frame, const bool can_fd, const bool extended_id);
+
+
 
 /* Parameters not setable from the application code */
 #define CANARD_MCAN_TX_BUFFER_SIZE_MAX 32
