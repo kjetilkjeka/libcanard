@@ -44,6 +44,16 @@ extern "C"
 #define CANARD_MCAN_CAN0       ((volatile CanardMcan*)0x40030000)
 #define CANARD_MCAN_CAN1       ((volatile CanardMcan*)0x40034000)
 
+
+struct CanardMcanTimingConfiguration {
+	uint32_t seg2:7;
+	uint32_t :1;
+	uint32_t seg1:8;
+	uint32_t brp:9;
+	uint32_t sjw:7;
+};
+
+ 
 typedef struct {
 	volatile uint32_t	CREL;			///< 0x00 - (MCAN) Core Release Register
 	volatile uint32_t	ENDN;			///< 0x04 - (MCAN) Endian Register
