@@ -6,7 +6,41 @@ extern "C"
 {
 #endif
 
-// CANx instances
+/* Configurable parameters parameters */
+
+/* 
+ * Transmit buffer size in number of elements.
+ * Each buffer element uses 16 or 72 bytes of static memory depending on whether CAN-FD frames are supported
+ */
+#ifndef CANARD_MCAN_TX_BUFFER_SIZE
+	#define CANARD_MCAN_TX_BUFFER_SIZE 32
+#endif
+
+/* 
+ * Receive FIFO 0 size in number of elements.
+ * Each FIFO element uses 16 or 72 bytes of static memory depending on whether CAN-FD frames are supported
+ */
+#ifndef CANARD_MCAN_RX_FIFO_SIZE
+	#define CANARD_MCAN_RX_FIFO_SIZE 64
+#endif
+
+/* 
+ * Number of Extended-ID filters
+ * Each filter uses 8 bytes of static memory
+ */
+#ifndef CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE
+	#define CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE 64
+#endif
+
+/* 
+ * Setting to `false` saves space by allocating 8 data bytes instead of 64 data bytes in buffers.
+ * The total buffer element size will then become 16 bytes instead of 72 bytes.
+ */
+#ifndef CANARD_MCAN_FD_SUPPORT
+	#define CANARD_MCAN_FD_SUPPORT false
+#endif
+
+/* CANx instances */
 #define CANARD_MCAN_CAN0       ((volatile CanardMcan*)0x40030000)
 #define CANARD_MCAN_CAN1       ((volatile CanardMcan*)0x40034000)
 
@@ -65,8 +99,25 @@ typedef struct {
 	volatile uint32_t	TXEFA;			///< 0xF8 - (MCAN) Transmit Event FIFO Acknowledge Register
 } CanardMcan;
 
+/* Parameters not setable from the application code */
+#define CANARD_MCAN_TX_BUFFER_SIZE_MAX 32
+#define CANARD_MCAN_RX_FIFO_SIZE_MAX 64
+#define CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE_MAX 64
 
 
+/* Parameters calculated from configurable parameters */
+#if CANARD_MCAN_FD_SUPPORT
+#define CANARD_MCAN_FRAME_DATA_LENGTH 64
+#else
+#define CANARD_MCAN_FRAME_DATA_LENGTH 8
+#endif
+
+
+/* Checks */
+/* Checks on application defined parameters */
+CANARD_STATIC_ASSERT(CANARD_MCAN_RX_FIFO_SIZE <= CANARD_MCAN_RX_FIFO_SIZE_MAX, "The defined RX FIFO size is not supported");
+CANARD_STATIC_ASSERT(CANARD_MCAN_TX_BUFFER_SIZE <= CANARD_MCAN_TX_BUFFER_SIZE_MAX, "The defined TX buffer size is not supported");
+CANARD_STATIC_ASSERT(CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE <= CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE_MAX, "The defined extended filter buffer size is not supported");
 
 
 #ifdef __cplusplus
