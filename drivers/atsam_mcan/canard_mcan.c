@@ -95,7 +95,7 @@ int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFram
 		interface_message_ram->tx_buffers[put_index].data[i] = frame->data[i];
 	}
 	
-	interface->TXBAR |= MCAN_TXBAR_AR((1<<put_index));
+	interface->TXBAR = (1<<put_index);
 	
 	return CANARD_MCAN_STATUS_OK;
 }
