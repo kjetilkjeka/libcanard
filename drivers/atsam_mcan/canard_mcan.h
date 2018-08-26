@@ -87,11 +87,11 @@ typedef struct {
 	volatile uint32_t	CREL;			///< 0x00 - (MCAN) Core Release Register
 	volatile uint32_t	ENDN;			///< 0x04 - (MCAN) Endian Register
 	volatile uint32_t	CUST;			///< 0x08 - (MCAN) Customer Register
-	volatile uint32_t	FBTP;			///< 0x0C - (MCAN) Fast Bit Timing and Prescaler Register
+	volatile uint32_t	DBTP;			///< 0x0C - (MCAN) Data Bit Timing and Prescaler Register
 	volatile uint32_t	TEST;			///< 0x10 - (MCAN) Test Register
 	volatile uint32_t	RWD;			///< 0x14 - (MCAN) RAM Watchdog Register
 	volatile uint32_t	CCCR;			///< 0x18 - (MCAN) CC Control Register
-	volatile uint32_t	BTP;			///< 0x1C - (MCAN) Bit Timing and Prescaler Register
+	volatile uint32_t	NBTP;			///< 0x1C - (MCAN) Nominial Bit Timing and Prescaler Register
 	volatile uint32_t	TSCC;			///< 0x20 - (MCAN) Timestamp Counter Configuration Register
 	volatile uint32_t	TSCV;			///< 0x24 - (MCAN) Timestamp Counter Value Register
 	volatile uint32_t	TOCC;			///< 0x28 - (MCAN) Timeout Counter Configuration Register

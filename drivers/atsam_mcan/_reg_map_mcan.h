@@ -1,7 +1,48 @@
+
+/* -------- MCAN_DBTP : (MCAN Offset: 0x0c) (R/W 32) Data Bit Timing and Prescaler Register -------- */
+#define MCAN_DBTP_DSJW_Pos                  (0)																///< Data (Re) Synchronization Jump Width Position
+#define MCAN_DBTP_DSJW_Msk                  (_U_(0x3) << MCAN_DBTP_DSJW_Pos)								///< Data (Re) Synchronization Jump Width Mask
+#define MCAN_DBTP_DSJW(value)               (MCAN_DBTP_DSJW_Msk & ((value) << MCAN_DBTP_DSJW_Pos))
+
+#define MCAN_DBTP_DTSEG2_Pos                (4)																///< Data Time Segment After Sample Point Position
+#define MCAN_DBTP_DTSEG2_Msk                (_U_(0x7) << MCAN_DBTP_DTSEG2_Pos)								///< Data Time Segment After Sample Point Mask
+#define MCAN_DBTP_DTSEG2(value)             (MCAN_DBTP_DTSEG2_Msk & ((value) << MCAN_DBTP_DTSEG2_Pos))
+
+#define MCAN_DBTP_DTSEG1_Pos                (8)																///< Data Time Segment Before Sample Point Position
+#define MCAN_DBTP_DTSEG1_Msk                (_U_(0xF) << MCAN_DBTP_DTSEG1_Pos)								///< Data Time Segment Before Sample Point Mask
+#define MCAN_DBTP_DTSEG1(value)             (MCAN_DBTP_DTSEG1_Msk & ((value) << MCAN_DBTP_DTSEG1_Pos))
+
+#define MCAN_DBTP_DBRP_Pos                  (16)															///< Fast Baud Rate Prescaler Position
+#define MCAN_DBTP_DBRP_Msk                  (_U_(0x1F) << MCAN_FBTP_FBRP_Pos)								///< Fast Baud Rate Prescaler Mask
+#define MCAN_DBTP_DBRP(value)               (MCAN_DBTP_DBRP_Msk & ((value) << MCAN_DBTP_DBRP_Pos))
+
+#define MCAN_DBTP_TDC_Pos                   (23)															///< Transceiver Delay Compensation Position
+#define MCAN_DBTP_TDC_Msk                   (_U_(0x1) << MCAN_DBTP_TDC_Pos)									///< Transceiver Delay Compensation Mask
+#define MCAN_DBTP_TDC                       (1 << MCAN_DBTP_TDC_Msk)										
+
+
+/* -------- MCAN_NBTP : (MCAN Offset: 0x1c) (R/W 32) Nominal Bit Timing and Prescaler Register -------- */
+#define MCAN_NBTP_NTSEG2_Pos                  (0)															///< Time Segment After Sample Point Position
+#define MCAN_NBTP_NTSEG2_Msk                  (_U_(0x7F) << MCAN_NBTP_NTSEG2_Pos)							///< Time Segment After Sample Point Mask
+#define MCAN_NBTP_NTSEG2(value)               (MCAN_NBTP_NTSEG2_Msk & ((value) << MCAN_NBTP_NTSEG2_Pos))
+
+#define MCAN_NBTP_NTSEG1_Pos                  (8)															///< Time Segment Before Sample Point Position
+#define MCAN_NBTP_NTSEG1_Msk                  (_U_(0xFF) << MCAN_NBTP_NTSEG1_Pos)							///< Time Segment Before Sample Point Mask
+#define MCAN_NBTP_NTSEG1(value)               (MCAN_NBTP_NTSEG1_Msk & ((value) << MCAN_NBTP_NTSEG1_Pos))
+
+#define MCAN_NBTP_NBRP_Pos                    (16)															///< Baud Rate Prescaler Position
+#define MCAN_NBTP_NBRP_Msk                    (_U_(0x1FF) << MCAN_NBTP_NBRP_Pos)							///< Baud Rate Prescaler Mask
+#define MCAN_NBTP_NBRP(value)                 (MCAN_NBTP_NBRP_Msk & ((value) << MCAN_NBTP_NBRP_Pos))
+
+#define MCAN_NBTP_NSJW_Pos                    (25)															///< (Re) Synchronization Jump Width Position
+#define MCAN_NBTP_NSJW_Msk                    (_U_(0x7F) << MCAN_NBTP_NSJW_Pos)								///< (Re) Synchronization Jump Width Mask
+#define MCAN_NBTP_NSJW(value)                 (MCAN_NBTP_NSJW_Msk & ((value) << MCAN_NBTP_NSJW_Pos))
+
+
 /* 
- * All code and most comment in this file is based on Microchips (Atmels) "Advanced Software Framework".
+ * All code and most comment below this statement is based on Microchips (Atmels) "Advanced Software Framework".
  *
- * Following the Apache 2.0 license every line in this file (below this comment) is a direct copy from ASF unless otherwise stated.
+ * Following the Apache 2.0 license every line in this file (below this statement) is a direct copy from ASF unless otherwise stated.
  * Following the Apache 2.0 license all modifications will be explicitly mentioned in comments.
  * Following the Apache 2.0 license a copy of the copyright notice follows directly after this notice.
  * Following the Apache 2.0 license a copy of the Apache 2.0 license can be found in the same directory as this file.
@@ -70,31 +111,7 @@
 #define MCAN_CUST_MASK                      _U_(0xFFFFFFFF)                                /**< \deprecated (MCAN_CUST) Register MASK  (Use MCAN_CUST_Msk instead)  */
 #define MCAN_CUST_Msk                       _U_(0xFFFFFFFF)                                /**< (MCAN_CUST) Register Mask  */
 
-/* -------- MCAN_FBTP : (MCAN Offset: 0x0c) (R/W 32) Fast Bit Timing and Prescaler Register -------- */
-#define MCAN_FBTP_FSJW_Pos                  0                                              /**< (MCAN_FBTP) Fast (Re) Synchronization Jump Width Position */
-#define MCAN_FBTP_FSJW_Msk                  (_U_(0x3) << MCAN_FBTP_FSJW_Pos)               /**< (MCAN_FBTP) Fast (Re) Synchronization Jump Width Mask */
-#define MCAN_FBTP_FSJW(value)               (MCAN_FBTP_FSJW_Msk & ((value) << MCAN_FBTP_FSJW_Pos))
-#define MCAN_FBTP_FTSEG2_Pos                4                                              /**< (MCAN_FBTP) Fast Time Segment After Sample Point Position */
-#define MCAN_FBTP_FTSEG2_Msk                (_U_(0x7) << MCAN_FBTP_FTSEG2_Pos)             /**< (MCAN_FBTP) Fast Time Segment After Sample Point Mask */
-#define MCAN_FBTP_FTSEG2(value)             (MCAN_FBTP_FTSEG2_Msk & ((value) << MCAN_FBTP_FTSEG2_Pos))
-#define MCAN_FBTP_FTSEG1_Pos                8                                              /**< (MCAN_FBTP) Fast Time Segment Before Sample Point Position */
-#define MCAN_FBTP_FTSEG1_Msk                (_U_(0xF) << MCAN_FBTP_FTSEG1_Pos)             /**< (MCAN_FBTP) Fast Time Segment Before Sample Point Mask */
-#define MCAN_FBTP_FTSEG1(value)             (MCAN_FBTP_FTSEG1_Msk & ((value) << MCAN_FBTP_FTSEG1_Pos))
-#define MCAN_FBTP_FBRP_Pos                  16                                             /**< (MCAN_FBTP) Fast Baud Rate Prescaler Position */
-#define MCAN_FBTP_FBRP_Msk                  (_U_(0x1F) << MCAN_FBTP_FBRP_Pos)              /**< (MCAN_FBTP) Fast Baud Rate Prescaler Mask */
-#define MCAN_FBTP_FBRP(value)               (MCAN_FBTP_FBRP_Msk & ((value) << MCAN_FBTP_FBRP_Pos))
-#define MCAN_FBTP_TDC_Pos                   23                                             /**< (MCAN_FBTP) Transceiver Delay Compensation Position */
-#define MCAN_FBTP_TDC_Msk                   (_U_(0x1) << MCAN_FBTP_TDC_Pos)                /**< (MCAN_FBTP) Transceiver Delay Compensation Mask */
-#define MCAN_FBTP_TDC                       MCAN_FBTP_TDC_Msk                              /**< \deprecated Old style mask definition for 1 bit bitfield. Use MCAN_FBTP_TDC_Msk instead */
-#define   MCAN_FBTP_TDC_DISABLED_Val        _U_(0x0)                                       /**< (MCAN_FBTP) Transceiver Delay Compensation disabled.  */
-#define   MCAN_FBTP_TDC_ENABLED_Val         _U_(0x1)                                       /**< (MCAN_FBTP) Transceiver Delay Compensation enabled.  */
-#define MCAN_FBTP_TDC_DISABLED              (MCAN_FBTP_TDC_DISABLED_Val << MCAN_FBTP_TDC_Pos)  /**< (MCAN_FBTP) Transceiver Delay Compensation disabled. Position  */
-#define MCAN_FBTP_TDC_ENABLED               (MCAN_FBTP_TDC_ENABLED_Val << MCAN_FBTP_TDC_Pos)  /**< (MCAN_FBTP) Transceiver Delay Compensation enabled. Position  */
-#define MCAN_FBTP_TDCO_Pos                  24                                             /**< (MCAN_FBTP) Transceiver Delay Compensation Offset Position */
-#define MCAN_FBTP_TDCO_Msk                  (_U_(0x1F) << MCAN_FBTP_TDCO_Pos)              /**< (MCAN_FBTP) Transceiver Delay Compensation Offset Mask */
-#define MCAN_FBTP_TDCO(value)               (MCAN_FBTP_TDCO_Msk & ((value) << MCAN_FBTP_TDCO_Pos))
-#define MCAN_FBTP_MASK                      _U_(0x1F9F0F73)                                /**< \deprecated (MCAN_FBTP) Register MASK  (Use MCAN_FBTP_Msk instead)  */
-#define MCAN_FBTP_Msk                       _U_(0x1F9F0F73)                                /**< (MCAN_FBTP) Register Mask  */
+/* Modification note: 0x0c register has been removed */
 
 /* -------- MCAN_TEST : (MCAN Offset: 0x10) (R/W 32) Test Register -------- */
 #define MCAN_TEST_LBCK_Pos                  4                                              /**< (MCAN_TEST) Loop Back Mode (read/write) Position */
@@ -217,21 +234,7 @@
 #define MCAN_CCCR_MASK                      _U_(0x7FFF)                                    /**< \deprecated (MCAN_CCCR) Register MASK  (Use MCAN_CCCR_Msk instead)  */
 #define MCAN_CCCR_Msk                       _U_(0x7FFF)                                    /**< (MCAN_CCCR) Register Mask  */
 
-/* -------- MCAN_BTP : (MCAN Offset: 0x1c) (R/W 32) Bit Timing and Prescaler Register -------- */
-#define MCAN_BTP_SJW_Pos                    0                                              /**< (MCAN_BTP) (Re) Synchronization Jump Width Position */
-#define MCAN_BTP_SJW_Msk                    (_U_(0xF) << MCAN_BTP_SJW_Pos)                 /**< (MCAN_BTP) (Re) Synchronization Jump Width Mask */
-#define MCAN_BTP_SJW(value)                 (MCAN_BTP_SJW_Msk & ((value) << MCAN_BTP_SJW_Pos))
-#define MCAN_BTP_TSEG2_Pos                  4                                              /**< (MCAN_BTP) Time Segment After Sample Point Position */
-#define MCAN_BTP_TSEG2_Msk                  (_U_(0xF) << MCAN_BTP_TSEG2_Pos)               /**< (MCAN_BTP) Time Segment After Sample Point Mask */
-#define MCAN_BTP_TSEG2(value)               (MCAN_BTP_TSEG2_Msk & ((value) << MCAN_BTP_TSEG2_Pos))
-#define MCAN_BTP_TSEG1_Pos                  8                                              /**< (MCAN_BTP) Time Segment Before Sample Point Position */
-#define MCAN_BTP_TSEG1_Msk                  (_U_(0x3F) << MCAN_BTP_TSEG1_Pos)              /**< (MCAN_BTP) Time Segment Before Sample Point Mask */
-#define MCAN_BTP_TSEG1(value)               (MCAN_BTP_TSEG1_Msk & ((value) << MCAN_BTP_TSEG1_Pos))
-#define MCAN_BTP_BRP_Pos                    16                                             /**< (MCAN_BTP) Baud Rate Prescaler Position */
-#define MCAN_BTP_BRP_Msk                    (_U_(0x3FF) << MCAN_BTP_BRP_Pos)               /**< (MCAN_BTP) Baud Rate Prescaler Mask */
-#define MCAN_BTP_BRP(value)                 (MCAN_BTP_BRP_Msk & ((value) << MCAN_BTP_BRP_Pos))
-#define MCAN_BTP_MASK                       _U_(0x3FF3FFF)                                 /**< \deprecated (MCAN_BTP) Register MASK  (Use MCAN_BTP_Msk instead)  */
-#define MCAN_BTP_Msk                        _U_(0x3FF3FFF)                                 /**< (MCAN_BTP) Register Mask  */
+/* Modification note: 0x1c register has been removed */
 
 /* -------- MCAN_TSCC : (MCAN Offset: 0x20) (R/W 32) Timestamp Counter Configuration Register -------- */
 #define MCAN_TSCC_TSS_Pos                   0                                              /**< (MCAN_TSCC) Timestamp Select Position */
