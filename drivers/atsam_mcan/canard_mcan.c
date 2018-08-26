@@ -11,6 +11,8 @@ static volatile CANARD_MCAN_MESSAGE_RAM mcan0_message_ram;
 static volatile CANARD_MCAN_MESSAGE_RAM mcan1_message_ram;
 
 /* Private (helper) function declarations */
+enum CanardMcanStatusCode dlc_from_data_len(uint8_t data_len, uint8_t* dlc);
+enum CanardMcanStatusCode data_len_from_dlc(uint8_t dlc, uint8_t* data_len);
 volatile CANARD_MCAN_MESSAGE_RAM* message_ram(const CanardMcan* const interface);
 void canardMcanInitializeMessageRam(volatile CanardMcan* const interface);
 void canardMcanInitializeTiming(volatile CanardMcan* interface, struct CanardMcanTimingConfiguration const timing);
@@ -47,38 +49,10 @@ int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFram
 	}
 	#endif
 	
-	uint8_t dlc;
-	if (frame->data_len <= 8) {
-		dlc = frame->data_len;
-	#if CANARD_MCAN_FD_SUPPORT
-	} else if (can_fd) {
-		switch(frame->data_len) {
-		case 64:
-			dlc == 0xf;
-			break;
-		case 48:
-			dlc == 0xe;
-			break;
-		case 32:
-			dlc == 0xd;
-			break;
-		case 24:
-			dlc == 0xc;
-			break;
-		case 20:
-			dlc == 0xb;
-			break;
-		case: 16;
-			dlc == 0xa;
-			break;
-		case 12:
-			dlc == 0x9;
-			break;
-		default:
-			return CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH;			
-	#endif
-	} else {
-		return CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH;
+	uint8_t dlc = 0;
+	uint16_t ret = dlc_from_data_len(frame->data_len, &dlc);
+	if (ret != CANARD_MCAN_STATUS_OK) {
+		return ret;
 	}
 	
 	if (interface->TXFQS & MCAN_TXFQS_TFQF) {
@@ -102,6 +76,82 @@ int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFram
 
 
 /* Private (helper) functions */
+
+enum CanardMcanStatusCode dlc_from_data_len(uint8_t data_len, uint8_t* dlc) {
+	if (data_len <= 8) {
+		*dlc = data_len;
+	#if CANARD_MCAN_FD_SUPPORT
+	} else if (can_fd) {
+		switch(data_len) {
+		case 64:
+			*dlc == 0xf;
+			break;
+		case 48:
+			*dlc == 0xe;
+			break;
+		case 32:
+			*dlc == 0xd;
+			break;
+		case 24:
+			*dlc == 0xc;
+			break;
+		case 20:
+			*dlc == 0xb;
+			break;
+		case: 16;
+			*dlc == 0xa;
+			break;
+		case 12:
+			*dlc == 0x9;
+			break;
+		default:
+			return CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH;
+		}
+	#endif
+	} else {
+		return CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH;
+	}
+	
+	return CANARD_MCAN_STATUS_OK;
+}
+
+enum CanardMcanStatusCode data_len_from_dlc(uint8_t dlc, uint8_t* data_len) {
+	if (dlc <= 8) {
+		*data_len = dlc;
+	#if CANARD_MCAN_FD_SUPPORT
+	} else if (can_fd) {
+		switch(dlc) {
+		case 0xf:
+			*data_len = 64;		
+			break;
+		case 0xe:
+			*data_len = 48;
+			break;
+		case 0xd:
+			*data_len = 32;
+			break;
+		case 0xc:
+			*data_len = 24;
+			break;
+		case 0xb:
+			*data_len = 20;
+			break;
+		case 0xa:
+			*data_len = 16;
+			break;
+		case 0x9:
+			*data_len = 12;
+			break;
+		default:
+			return CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH;
+		}
+	#endif
+	} else {
+		return CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH;
+	}
+		
+	return CANARD_MCAN_STATUS_OK;
+}
 
 volatile CANARD_MCAN_MESSAGE_RAM* message_ram(const CanardMcan* const interface) {
 	if (interface == CANARD_MCAN_CAN0) {
