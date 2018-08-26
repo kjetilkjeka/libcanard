@@ -52,7 +52,10 @@ extern "C"
 /* API types */
 enum CanardMcanStatusCode {
 	CANARD_MCAN_STATUS_OK = 0,
-	CANARD_MCAN_STATUS_BUFFER_FULL = -1,
+	CANARD_MCAN_STATUS_BUFFER_FULL = 1,
+	CANARD_MCAN_STATUS_BUFFER_EMPTY = 2,
+	
+	/* Supported data lengths are 0-8 and also 12, 16, 20, 24, 32, 48, 64 if compiled with FD support */
 	CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH = -2,
 
 	/* CAN-FD support is not compiled in. Set `CANARD_MCAN_FD_SUPPORT` to `true` fix this */
@@ -153,6 +156,14 @@ int16_t canardMcanTransmit(volatile CanardMcan* interface, const CanardCANFrame*
  */ 
 int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFrame* const frame, const bool can_fd, const bool extended_id);
 
+/* A simple can receive function suitable when only CAN2.0B frames will be accepted by the filters.
+ * 
+ * If a different frame is encountered, a status code explaining the error will be returned. The frame will not be a valid CAN2.0B frame.
+ */
+int16_t canardMcanReceive(volatile CanardMcan* interface, CanardCANFrame* frame);
+
+/* A more general receive function that allows receiving FD frames or frames with base ID (!extended_id). */
+int16_t canardMcanReceiveAs(volatile CanardMcan* interface, CanardCANFrame* frame, bool* can_fd, bool* extended_id );
 
 
 /* Parameters not setable from the application code */
