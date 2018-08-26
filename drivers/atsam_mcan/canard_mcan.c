@@ -145,5 +145,5 @@ void canardMcanInitializeMessageRam(volatile CanardMcan* interface) {
 }
 
 void canardMcanInitializeTiming(volatile CanardMcan* interface, struct CanardMcanTimingConfiguration const timing) {
-	interface->BTP = (MCAN_BTP_TSEG2(timing.seg2) | MCAN_BTP_TSEG1(timing.seg1) | MCAN_BTP_BRP(timing.brp) | MCAN_BTP_SJW(timing.sjw) ); //mcan set baudrate
+	interface->NBTP = (MCAN_NBTP_NTSEG2(timing.seg2) | MCAN_NBTP_NTSEG1(timing.seg1) | MCAN_NBTP_NBRP(timing.brp) | MCAN_NBTP_NSJW(timing.sjw) ); //mcan set baudrate
 }
