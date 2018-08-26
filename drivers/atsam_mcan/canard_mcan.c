@@ -33,7 +33,7 @@ int16_t canardMcanInit(volatile CanardMcan* interface, struct CanardMcanConfigur
 	/* Wait for can-bus sync */ 
 	while (interface->CCCR & MCAN_CCCR_INIT);
 	
-	return 0;
+	return CANARD_MCAN_STATUS_OK;
 }
 
 int16_t canardMcanTransmit(volatile CanardMcan* interface, const CanardCANFrame* const frame) {
@@ -97,7 +97,7 @@ int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFram
 	
 	interface->TXBAR |= MCAN_TXBAR_AR((1<<put_index));
 	
-	return 0;
+	return CANARD_MCAN_STATUS_OK;
 }
 
 
