@@ -74,6 +74,51 @@ int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFram
 	return CANARD_MCAN_STATUS_OK;
 }
 
+int16_t canardMcanReceive(volatile CanardMcan* interface, CanardCANFrame* const frame) {
+	bool can_fd = false;
+	bool extended_id = true;
+	int16_t ret_val = canardMcanReceiveAs(interface, frame, &can_fd, &extended_id);
+	
+	if (ret_val != 0) {
+		return ret_val;
+	} else if (can_fd && !extended_id) {
+		return CANARD_MCAN_STATUS_UNEXPECTED_BASE_ID_FD_FRAME;
+	} else if (can_fd) {
+		return CANARD_MCAN_STATUS_UNEXPECTED_EXTENDED_ID_FD_FRAME;
+	} else if (!extended_id) {
+		return CANARD_MCAN_STATUS_UNEXPECTED_BASE_ID_2_FRAME;
+	} else {
+		return ret_val;
+	}
+}
+
+int16_t canardMcanReceiveAs(volatile CanardMcan* interface, CanardCANFrame* frame, bool* can_fd, bool* extended_id ) {
+	// This function assumes that only RX fifo 0 is in use.
+	
+	if (((interface->RXF0S & MCAN_RXF0S_F0FL_Msk) >> MCAN_RXF0S_F0FL_Pos) == 0) { // If Rx fifo empty
+		return CANARD_MCAN_STATUS_BUFFER_EMPTY;
+	}
+	
+	uint32_t get_index = ((interface->RXF0S & MCAN_RXF0S_F0GI_Msk) >> MCAN_RXF0S_F0GI_Pos);
+	volatile CANARD_MCAN_MESSAGE_RAM* interface_message_ram = message_ram(interface);
+	
+	*can_fd = (interface_message_ram->rx_fifo0[get_index].R1 & MCAN_MESSAGE_RX_BUFFER_R1_FDF_Msk) >> MCAN_MESSAGE_RX_BUFFER_R1_FDF_Pos;
+	*extended_id = (interface_message_ram->rx_fifo0[get_index].R0 & MCAN_MESSAGE_RX_BUFFER_R0_XTD_Msk) >> MCAN_MESSAGE_RX_BUFFER_R0_XTD_Pos;
+	
+	frame->id = (interface_message_ram->rx_fifo0[get_index].R0 & MCAN_MESSAGE_RX_BUFFER_R0_ID_Msk) >> MCAN_MESSAGE_RX_BUFFER_R0_ID_Pos;
+	uint8_t dlc = (interface_message_ram->rx_fifo0[get_index].R1 & MCAN_MESSAGE_RX_BUFFER_R1_DLC_Msk) >> MCAN_MESSAGE_RX_BUFFER_R1_DLC_Pos;
+	
+	data_len_from_dlc(dlc, &(frame->data_len));
+	
+	for (int i=0; i < frame->data_len; i++) {
+		frame->data[i] = interface_message_ram->rx_fifo0[get_index].data[i];
+	}
+	
+	interface->RXF0A = get_index;
+	
+	return CANARD_MCAN_STATUS_OK;
+}
+
 
 /* Private (helper) functions */
 
