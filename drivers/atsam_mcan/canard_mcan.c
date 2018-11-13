@@ -249,9 +249,9 @@ volatile CANARD_MCAN_MESSAGE_RAM* message_ram(const CanardMcan* const interface)
 void canardMcanInitializeMessageRam(volatile CanardMcan* interface) {
 	/* Configure size of rx and tx buffers (including Rx-FIFO) */
 	#if CANARD_MCAN_FRAME_DATA_LENGTH == 8
-	interface->RXESC = MCAN_RXESC_F0DS_8_BYTE | MCAN_RXESC_F1DS_8_BYTE | MCAN_RXESC_RBDS_8_BYTE;
+	interface->RXESC = MCAN_RXESC_F0DS(000) | MCAN_RXESC_F1DS(000) | MCAN_RXESC_RBDS(000);
 	#elif CANARD_MCAN_FRAME_DATA_LENGTH == 64
-	interface->RXESC = MCAN_RXESC_F0DS_64_BYTE | MCAN_RXESC_F1DS_64_BYTE | MCAN_RXESC_RBDS_64_BYTE;
+	interface->RXESC = MCAN_RXESC_F0DS(111) | MCAN_RXESC_F1DS(111) | MCAN_RXESC_RBDS(111);
 	#else
 	#error "Unsupported frame data length"
 	#endif
@@ -271,7 +271,7 @@ void canardMcanInitializeMessageRam(volatile CanardMcan* interface) {
 	interface->XIDFC = ((uint32_t) interface_message_ram->extended_filters & MCAN_XIDFC_FLESA_Msk) | MCAN_XIDFC_LSE(CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE);
 	
 	/* Configure Fifo 0 */
-	interface->RXF0C = ((uint32_t) interface_message_ram->rx_fifo0 & MCAN_RXF1C_F1SA_Msk) | MCAN_RXF1C_F1S(CANARD_MCAN_RX_FIFO_SIZE);
+	interface->RXF0C = ((uint32_t) interface_message_ram->rx_fifo0 & MCAN_RXF0C_F0SA_Msk) | MCAN_RXF0C_F0S(CANARD_MCAN_RX_FIFO_SIZE);
 		
 	/* Configure Tx-buffers */
 	interface->TXBC = ((uint32_t) interface_message_ram->tx_buffers & MCAN_TXBC_TBSA_Msk) | MCAN_TXBC_TFQS(CANARD_MCAN_TX_BUFFER_SIZE) | MCAN_TXBC_TFQM;
