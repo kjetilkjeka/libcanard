@@ -123,37 +123,56 @@ int16_t canardMcanReceiveAs(volatile CanardMcan* interface, CanardCANFrame* fram
 /* Private (helper) functions */
 
 enum CanardMcanStatusCode dlc_from_data_len(uint8_t data_len, uint8_t* dlc) {
-	if (data_len <= 8) {
-		*dlc = data_len;
-	#if CANARD_MCAN_FD_SUPPORT
-	} else if (can_fd) {
-		switch(data_len) {
-		case 64:
-			*dlc == 0xf;
-			break;
-		case 48:
-			*dlc == 0xe;
-			break;
-		case 32:
-			*dlc == 0xd;
-			break;
-		case 24:
-			*dlc == 0xc;
-			break;
-		case 20:
-			*dlc == 0xb;
-			break;
-		case: 16;
-			*dlc == 0xa;
-			break;
-		case 12:
-			*dlc == 0x9;
-			break;
-		default:
-			return CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH;
-		}
-	#endif
-	} else {
+	switch(data_len) {
+	case 64:
+		*dlc = 0xf;
+		break;
+	case 48:
+		*dlc = 0xe;
+		break;
+	case 32:
+		*dlc = 0xd;
+		break;
+	case 24:
+		*dlc = 0xc;
+		break;
+	case 20:
+		*dlc = 0xb;
+		break;
+	case 16:
+		*dlc = 0xa;
+		break;
+	case 12:
+		*dlc = 0x9;
+		break;
+	case 8:
+		*dlc = 0x8;
+		break;
+	case 7:
+		*dlc = 0x7;
+		break;
+	case 6:
+		*dlc = 0x6;
+		break;
+	case 5:
+		*dlc = 0x5;
+		break;
+	case 4:
+		*dlc = 0x4;
+		break;
+	case 3:
+		*dlc = 0x3;
+		break;
+	case 2:
+		*dlc = 0x2;
+		break;
+	case 1:
+		*dlc = 0x1;
+		break;
+	case 0:
+		*dlc = 0x0;
+		break;
+	default:
 		return CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH;
 	}
 	
@@ -161,37 +180,56 @@ enum CanardMcanStatusCode dlc_from_data_len(uint8_t data_len, uint8_t* dlc) {
 }
 
 enum CanardMcanStatusCode data_len_from_dlc(uint8_t dlc, uint8_t* data_len) {
-	if (dlc <= 8) {
-		*data_len = dlc;
-	#if CANARD_MCAN_FD_SUPPORT
-	} else if (can_fd) {
-		switch(dlc) {
-		case 0xf:
-			*data_len = 64;		
-			break;
-		case 0xe:
-			*data_len = 48;
-			break;
-		case 0xd:
-			*data_len = 32;
-			break;
-		case 0xc:
-			*data_len = 24;
-			break;
-		case 0xb:
-			*data_len = 20;
-			break;
-		case 0xa:
-			*data_len = 16;
-			break;
-		case 0x9:
-			*data_len = 12;
-			break;
-		default:
-			return CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH;
-		}
-	#endif
-	} else {
+	switch(dlc) {
+	case 0xf:
+		*data_len = 64;		
+		break;
+	case 0xe:
+		*data_len = 48;
+		break;
+	case 0xd:
+		*data_len = 32;
+		break;
+	case 0xc:
+		*data_len = 24;
+		break;
+	case 0xb:
+		*data_len = 20;
+		break;
+	case 0xa:
+		*data_len = 16;
+		break;
+	case 0x9:
+		*data_len = 12;
+		break;
+	case 0x8:
+		*data_len = 8;
+		break;
+	case 0x7:
+		*data_len = 7;
+		break;
+	case 0x6:
+		*data_len = 6;
+		break;
+	case 0x5:
+		*data_len = 5;
+		break;
+	case 0x4:
+		*data_len = 4;
+		break;
+	case 0x3:
+		*data_len = 3;
+		break;
+	case 0x2:
+		*data_len = 2;
+		break;
+	case 0x1:
+		*data_len = 1;
+		break;
+	case 0x0:
+		*data_len = 0;
+		break;
+	default:
 		return CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH;
 	}
 		
