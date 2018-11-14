@@ -16,6 +16,7 @@ enum CanardMcanStatusCode data_len_from_dlc(uint8_t dlc, uint8_t* data_len);
 volatile CANARD_MCAN_MESSAGE_RAM* message_ram(const CanardMcan* const interface);
 void canardMcanInitializeMessageRam(volatile CanardMcan* const interface);
 void canardMcanInitializeTiming(volatile CanardMcan* interface, struct CanardMcanTimingConfiguration const timing);
+void canardMcanInitializeInterrupts(volatile CanardMcan* interface, struct CanardMcanInterruptConfiguration const interrupts);
 
 /* API functions */
 
@@ -25,10 +26,10 @@ int16_t canardMcanInit(volatile CanardMcan* interface, struct CanardMcanConfigur
 	interface->CCCR |= MCAN_CCCR_INIT;
 	interface->CCCR |= MCAN_CCCR_CCE;
 	
-	// TODO: Insert initialize interrupts from config.interrupt
 	canardMcanInitializeTiming(interface, config.timing);
 	canardMcanInitializeMessageRam(interface);
-	
+	canardMcanInitializeInterrupts(interface, config.interrupts);
+
 	/* Finish configuration */
 	interface->CCCR &= ~MCAN_CCCR_INIT;
 	
@@ -117,6 +118,23 @@ int16_t canardMcanReceiveAs(volatile CanardMcan* interface, CanardCANFrame* fram
 	interface->RXF0A = get_index;
 	
 	return CANARD_MCAN_STATUS_OK;
+}
+
+void canardMcanReadInterruptStatus(volatile CanardMcan* interface, struct CanardMcanInterrupts* interrupts) {
+	uint32_t ir = interface->IR;
+
+	interrupts->receive_fifo_0_new_message = (ir | MCAN_IR_RF0N) != 0;
+	interrupts->receive_fifo_0_watermark_reached = (ir | MCAN_IR_RF0W) != 0;
+	interrupts->receive_fifo_0_full = (ir | MCAN_IR_RF0F) != 0;
+	interrupts->receive_fifo_0_message_lost = (ir | MCAN_IR_RF0L) != 0;
+}
+
+void canardMcanClearInterruptStatus(volatile CanardMcan* interface, const struct CanardMcanInterrupts* interrupts) {
+	interface->IR = 
+		(interrupts->receive_fifo_0_new_message ? MCAN_IR_RF0N : 0) |
+		(interrupts->receive_fifo_0_watermark_reached ? MCAN_IR_RF0W : 0) |
+		(interrupts->receive_fifo_0_full ? MCAN_IR_RF0F : 0) |
+		(interrupts->receive_fifo_0_message_lost ? MCAN_IR_RF0L : 0);
 }
 
 
@@ -279,4 +297,23 @@ void canardMcanInitializeMessageRam(volatile CanardMcan* interface) {
 
 void canardMcanInitializeTiming(volatile CanardMcan* interface, struct CanardMcanTimingConfiguration const timing) {
 	interface->NBTP = (MCAN_NBTP_NTSEG2(timing.seg2) | MCAN_NBTP_NTSEG1(timing.seg1) | MCAN_NBTP_NBRP(timing.brp) | MCAN_NBTP_NSJW(timing.sjw) ); //mcan set baudrate
+}
+
+void canardMcanInitializeInterrupts(volatile CanardMcan* interface, struct CanardMcanInterruptConfiguration const interrupts) {
+	interface->ILE = 
+		(interrupts.enable_interrupt_line0 ? MCAN_ILE_EINT0 : 0) | 
+		(interrupts.enable_interrupt_line1 ? MCAN_ILE_EINT1 : 0);
+
+	interface->ILS = 
+		(interrupts.interrupt_line_select.receive_fifo_0_new_message ? MCAN_ILS_RF0NL : 0) |
+		(interrupts.interrupt_line_select.receive_fifo_0_watermark_reached ? MCAN_ILS_RF0WL : 0) |
+		(interrupts.interrupt_line_select.receive_fifo_0_full ? MCAN_ILS_RF0FL : 0) |
+		(interrupts.interrupt_line_select.receive_fifo_0_message_lost ? MCAN_ILS_RF0LL : 0);
+
+	interface->IE = 
+		(interrupts.interrupt_enable.receive_fifo_0_new_message ? MCAN_IE_RF0NE : 0) |
+		(interrupts.interrupt_enable.receive_fifo_0_watermark_reached ? MCAN_IE_RF0WE : 0) |
+		(interrupts.interrupt_enable.receive_fifo_0_full ? MCAN_IE_RF0FE : 0) |
+		(interrupts.interrupt_enable.receive_fifo_0_message_lost ? MCAN_IE_RF0LE : 0);
+
 }
