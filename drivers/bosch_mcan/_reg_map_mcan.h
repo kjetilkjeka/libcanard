@@ -35,20 +35,20 @@
 
 /* MCAN_DBTP - Data Bit Timing and Prescaler Register - 0x0C */
 #define MCAN_DBTP_DSJW_Pos                  (0)																/* Data (Re) Synchronization Jump Width Position */
-#define MCAN_DBTP_DSJW_Msk                  (_U_(0x3) << MCAN_DBTP_DSJW_Pos)								/* Data (Re) Synchronization Jump Width Mask */
+#define MCAN_DBTP_DSJW_Msk                  (_U_(0x7) << MCAN_DBTP_DSJW_Pos)								/* Data (Re) Synchronization Jump Width Mask */
 #define MCAN_DBTP_DSJW(value)               (MCAN_DBTP_DSJW_Msk & ((value) << MCAN_DBTP_DSJW_Pos))          /* Data (Re) Synchronization Jump Width */
 #define MCAN_DBTP_DTSEG2_Pos                (4)																/* Data Time Segment After Sample Point Position */
-#define MCAN_DBTP_DTSEG2_Msk                (_U_(0x7) << MCAN_DBTP_DTSEG2_Pos)								/* Data Time Segment After Sample Point Mask */
+#define MCAN_DBTP_DTSEG2_Msk                (_U_(0xF) << MCAN_DBTP_DTSEG2_Pos)								/* Data Time Segment After Sample Point Mask */
 #define MCAN_DBTP_DTSEG2(value)             (MCAN_DBTP_DTSEG2_Msk & ((value) << MCAN_DBTP_DTSEG2_Pos))      /* Data Time Segment After Sample Point */
 #define MCAN_DBTP_DTSEG1_Pos                (8)																/* Data Time Segment Before Sample Point Position */
-#define MCAN_DBTP_DTSEG1_Msk                (_U_(0xF) << MCAN_DBTP_DTSEG1_Pos)								/* Data Time Segment Before Sample Point Mask */
+#define MCAN_DBTP_DTSEG1_Msk                (_U_(0x1F) << MCAN_DBTP_DTSEG1_Pos)								/* Data Time Segment Before Sample Point Mask */
 #define MCAN_DBTP_DTSEG1(value)             (MCAN_DBTP_DTSEG1_Msk & ((value) << MCAN_DBTP_DTSEG1_Pos))      /* Data Time Segment Before Sample Point */
 #define MCAN_DBTP_DBRP_Pos                  (16)															/* Fast Baud Rate Prescaler Position */
-#define MCAN_DBTP_DBRP_Msk                  (_U_(0x1F) << MCAN_FBTP_FBRP_Pos)								/* Fast Baud Rate Prescaler Mask */
+#define MCAN_DBTP_DBRP_Msk                  (_U_(0x1F) << MCAN_DBTP_DBRP_Pos)								/* Fast Baud Rate Prescaler Mask */
 #define MCAN_DBTP_DBRP(value)               (MCAN_DBTP_DBRP_Msk & ((value) << MCAN_DBTP_DBRP_Pos))          /* Fast Baud Rate Prescaler */
 #define MCAN_DBTP_TDC_Pos                   (23)															/* Transceiver Delay Compensation Position */
 #define MCAN_DBTP_TDC_Msk                   (_U_(0x1) << MCAN_DBTP_TDC_Pos)									/* Transceiver Delay Compensation Mask */
-#define MCAN_DBTP_TDC                       (1 << MCAN_DBTP_TDC_Msk)										/* Transceiver Delay Compensation */
+#define MCAN_DBTP_TDC                       MCAN_DBTP_TDC_Msk       										/* Transceiver Delay Compensation */
 
 /* MCAN_CCCR - CC Control Register - 0x18 */
 #define MCAN_CCCR_INIT_Pos                  0                                              /* (MCAN_CCCR) Initialization Position */
@@ -77,10 +77,10 @@
 #define MCAN_CCCR_TEST                      MCAN_CCCR_TEST_Msk                             /* (MCAN_CCCR) Test Mode Enable */
 #define MCAN_CCCR_FDOE_Pos                   8                                              /* (MCAN_CCCR) FD Operation Enable Position */
 #define MCAN_CCCR_FDOE_Msk                   (_U_(0x3) << MCAN_CCCR_FDOE_Pos)                /* (MCAN_CCCR) FD Operation Enable Mask */
-#define MCAN_CCCR_FDOE(value)                (MCAN_CCCR_FDOE_Msk & ((value) << MCAN_CCCR_FDOE_Pos)) /* (MCAN_CCCR) FD Operation Enable */
+#define MCAN_CCCR_FDOE                      (MCAN_CCCR_FDOE_Msk)                            /* (MCAN_CCCR) FD Operation Enable */
 #define MCAN_CCCR_BRSE_Pos                   9                                              /* (MCAN_CCCR) Bit Rate Switch Enable Position */
 #define MCAN_CCCR_BRSE_Msk                   (_U_(0x3) << MCAN_CCCR_BRSE_Pos)                /* (MCAN_CCCR) Bit Rate Switch Enable Mask */
-#define MCAN_CCCR_BRSE(value)                (MCAN_CCCR_BRSE_Msk & ((value) << MCAN_CCCR_BRSE_Pos)) /* (MCAN_CCCR) Bit Rate Switch Enable */
+#define MCAN_CCCR_BRSE                      (MCAN_CCCR_BRSE_Msk)                            /* (MCAN_CCCR) Bit Rate Switch Enable */
 #define MCAN_CCCR_PXHD_Pos                   12                                             /* (MCAN_CCCR) Protocol Exception Handling Disable Position */
 #define MCAN_CCCR_PXHD_Msk                   (_U_(0x1) << MCAN_CCCR_FDO_Pos)                /* (MCAN_CCCR) Protocol Exception Handling Disable Mask */
 #define MCAN_CCCR_PXHD                       MCAN_CCCR_FDO_Msk                              /* (MCAN_CCCR) Protocol Exception Handling Disable */
@@ -90,6 +90,9 @@
 #define MCAN_CCCR_TXP_Pos                   14                                             /* (MCAN_CCCR) Transmit Pause Position */
 #define MCAN_CCCR_TXP_Msk                   (_U_(0x1) << MCAN_CCCR_TXP_Pos)                /* (MCAN_CCCR) Transmit Pause Mask */
 #define MCAN_CCCR_TXP                       MCAN_CCCR_TXP_Msk                              /* (MCAN_CCCR) Transmit Pause */
+#define MCAN_CCCR_NISO_Pos                  15                                             /* (MCAN_CCCR) Non-ISO Operation Position */
+#define MCAN_CCCR_NISO_Msk                  (_U_(0x1) << MCAN_CCCR_NISO_Pos)               /* (MCAN_CCCR) Non-ISO Operation Mask */
+#define MCAN_CCCR_NISO                      MCAN_CCCR_NISO_Msk                             /* (MCAN_CCCR) Non-ISO Operation */
 
 /* MCAN_NBTP - Nominal Bit Timing and Prescaler Register - 0x1C */
 #define MCAN_NBTP_NTSEG2_Pos                  (0)															/* Time Segment After Sample Point Position */
@@ -104,6 +107,14 @@
 #define MCAN_NBTP_NSJW_Pos                    (25)															/* (Re) Synchronization Jump Width Position */
 #define MCAN_NBTP_NSJW_Msk                    (_U_(0x7F) << MCAN_NBTP_NSJW_Pos)								/* (Re) Synchronization Jump Width Mask */
 #define MCAN_NBTP_NSJW(value)                 (MCAN_NBTP_NSJW_Msk & ((value) << MCAN_NBTP_NSJW_Pos))        /* (Re) Synchronization Jump Width */
+
+/* MCAN_TDCR - Transmitter Delay Compensation Register - 0x48 */
+#define MCAN_TDCR_TDCF_Pos                  0                                                               /* (MCAN_TDCR) Transmitter Delay Compensation Filter Position */
+#define MCAN_TDCR_TDCF_Msk                  (_U_(0x7F) << MCAN_TDCR_TDCF_Pos)                               /* (MCAN_TDCR) Transmitter Delay Compensation Filter Mask */
+#define MCAN_TDCR_TDCF(value)               (MCAN_TDCR_TDCF_Msk & ((value) << MCAN_TDCR_TDCF_Pos))          /* (MCAN_TDCR) Transmitter Delay Compensation Filter */
+#define MCAN_TDCR_TDCO_Pos                  8                                                               /* (MCAN_TDCR) Transmitter Delay Compensation Offset Position */
+#define MCAN_TDCR_TDCO_Msk                  (_U_(0x7F) << MCAN_TDCR_TDCO_Pos)                               /* (MCAN_TDCR) Transmitter Delay Compensation Offset Mask */
+#define MCAN_TDCR_TDCO(value)               (MCAN_TDCR_TDCO_Msk & ((value) << MCAN_TDCR_TDCO_Pos))          /* (MCAN_TDCR) Transmitter Delay Compensation Offset */ 
 
 /* MCAN_IR - Interrupt Register - 0x50 */
 #define MCAN_IR_RF0N_Pos                    0                                              /* (MCAN_IR) Receive FIFO 0 New Message Position */
