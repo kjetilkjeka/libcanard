@@ -106,23 +106,6 @@ typedef struct {
 	volatile CANARD_MCAN_MESSAGE_TX_BUFFER_ELEMENT tx_buffers[CANARD_MCAN_TX_BUFFER_SIZE];
 } CANARD_MCAN_MESSAGE_RAM;
 
-/* We're relying on unspecified and implementation defined behavior. Let's do some assertions to verify at least some of our assumptions. */
-
-#if CANARD_MCAN_FD_SUPPORT
-CANARD_STATIC_ASSERT(sizeof(CANARD_MCAN_MESSAGE_RX_BUFFER_ELEMENT) == 72, "Invalid memory layout (wrong size) of CANARD_MCAN_MESSAGE_RX_BUFFER_ELEMENT");
-#else
-CANARD_STATIC_ASSERT(sizeof(CANARD_MCAN_MESSAGE_RX_BUFFER_ELEMENT) == 16, "Invalid memory layout (wrong size) of CANARD_MCAN_MESSAGE_RX_BUFFER_ELEMENT");
-#endif
-
-#if CANARD_MCAN_FD_SUPPORT
-CANARD_STATIC_ASSERT(sizeof(CANARD_MCAN_MESSAGE_TX_BUFFER_ELEMENT) == 72, "Invalid memory layout (wrong size) of CANARD_MCAN_MESSAGE_TX_BUFFER_ELEMENT");
-#else
-CANARD_STATIC_ASSERT(sizeof(CANARD_MCAN_MESSAGE_TX_BUFFER_ELEMENT) == 16, "Invalid memory layout (wrong size) of CANARD_MCAN_MESSAGE_TX_BUFFER_ELEMENT");
-#endif
-
-CANARD_STATIC_ASSERT(sizeof(CANARD_MCAN_MESSAGE_EXTENDED_ID_FILTER_ELEMENT) == 8, "Invalid memory layout (wrong size) of CANARD_MCAN_MESSAGE_EXTENDED_ID_FILTER_ELEMENT");
-
-
 
 
 #endif /* _REG_MAP_MCAN_MESSAGE_RAM1_H_ */

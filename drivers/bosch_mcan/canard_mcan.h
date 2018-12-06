@@ -36,14 +36,6 @@ extern "C"
 	#define CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE 64
 #endif
 
-/* 
- * Setting to `false` saves space by allocating 8 data bytes instead of 64 data bytes in buffers.
- * The total buffer element size will then become 16 bytes instead of 72 bytes.
- */
-#ifndef CANARD_MCAN_FD_SUPPORT
-	#define CANARD_MCAN_FD_SUPPORT false
-#endif
-
 /* CANx instances */
 #define CANARD_MCAN_CAN0       ((volatile CanardMcan*)0x40030000)
 #define CANARD_MCAN_CAN1       ((volatile CanardMcan*)0x40034000)
@@ -57,9 +49,6 @@ enum CanardMcanStatusCode {
 	
 	/* Supported data lengths are 0-8 and also 12, 16, 20, 24, 32, 48, 64 if compiled with FD support */
 	CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH = -2,
-
-	/* CAN-FD support is not compiled in. Set `CANARD_MCAN_FD_SUPPORT` to `true` fix this */
-	CANARD_MCAN_STATUS_NO_FD_SUPPORT = -3,
 	
 	/* Found a CAN2.0A (Base-ID) frame when something else was expected */
 	CANARD_MCAN_STATUS_UNEXPECTED_BASE_ID_2_FRAME = -4,
@@ -74,12 +63,31 @@ enum CanardMcanStatusCode {
 	CANARD_MCAN_STATUS_UNEXPECTED_EXTENDED_ID_FD_FRAME = -7,
 };
 
+/* Defines the bit rate for the CAN and CAN-FD header and data bit rate for CAN transmission */
 struct CanardMcanTimingConfiguration {
 	uint32_t seg2:7;
 	uint32_t :1;
 	uint32_t seg1:8;
 	uint32_t brp:9;
 	uint32_t sjw:7;
+};
+
+/* Defines the data bit rate for CAN-FD transmission */
+struct CanardMcanDataTimingConfiguration {
+	uint32_t sjw:3;
+	uint32_t :1;
+	uint32_t seg2:4;
+	uint32_t seg1:4;
+	uint32_t :3;
+	uint32_t brp:4;
+};
+
+/* Defines the data bit rate for CAN-FD transmission */
+struct CanardMcanTransmitterDelayCompensationConfiguration {
+	uint32_t tdcf:7;
+	uint32_t :1;
+	uint32_t tdco:7;
+	uint32_t :1;
 };
 
 struct CanardMcanInterrupts {
@@ -117,6 +125,8 @@ struct CanardMcanInterruptConfiguration {
 
 struct CanardMcanConfiguration {
 	struct CanardMcanTimingConfiguration timing;
+	struct CanardMcanDataTimingConfiguration data_timing;
+	struct CanardMcanTransmitterDelayCompensationConfiguration transmitter_delay_compensation;
 	struct CanardMcanInterruptConfiguration interrupts;
 };
  
@@ -209,14 +219,7 @@ void canardMcanClearInterruptStatus(volatile CanardMcan* interface, const struct
 #define CANARD_MCAN_TX_BUFFER_SIZE_MAX 32
 #define CANARD_MCAN_RX_FIFO_SIZE_MAX 64
 #define CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE_MAX 64
-
-
-/* Parameters calculated from configurable parameters */
-#if CANARD_MCAN_FD_SUPPORT
 #define CANARD_MCAN_FRAME_DATA_LENGTH 64
-#else
-#define CANARD_MCAN_FRAME_DATA_LENGTH 8
-#endif
 
 
 /* Checks */

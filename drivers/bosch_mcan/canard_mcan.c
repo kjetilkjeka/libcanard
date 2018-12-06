@@ -15,7 +15,12 @@ enum CanardMcanStatusCode dlc_from_data_len(uint8_t data_len, uint8_t* dlc);
 enum CanardMcanStatusCode data_len_from_dlc(uint8_t dlc, uint8_t* data_len);
 volatile CANARD_MCAN_MESSAGE_RAM* message_ram(const CanardMcan* const interface);
 void canardMcanInitializeMessageRam(volatile CanardMcan* const interface);
-void canardMcanInitializeTiming(volatile CanardMcan* interface, struct CanardMcanTimingConfiguration const timing);
+void canardMcanInitializeTiming(
+	volatile CanardMcan* interface, 
+	struct CanardMcanTimingConfiguration const timing, 
+	struct CanardMcanDataTimingConfiguration const data_timing,
+	struct CanardMcanTransmitterDelayCompensationConfiguration const transmitter_delay_compensation
+);
 void canardMcanInitializeInterrupts(volatile CanardMcan* interface, struct CanardMcanInterruptConfiguration const interrupts);
 
 /* API functions */
@@ -25,8 +30,10 @@ int16_t canardMcanInit(volatile CanardMcan* interface, struct CanardMcanConfigur
 	/* Start configuration. */
 	interface->CCCR |= MCAN_CCCR_INIT;
 	interface->CCCR |= MCAN_CCCR_CCE;
+
+	interface->CCCR |= MCAN_CCCR_FDOE | MCAN_CCCR_BRSE;
 	
-	canardMcanInitializeTiming(interface, config.timing);
+	canardMcanInitializeTiming(interface, config.timing, config.data_timing, config.transmitter_delay_compensation);
 	canardMcanInitializeMessageRam(interface);
 	canardMcanInitializeInterrupts(interface, config.interrupts);
 
@@ -44,12 +51,6 @@ int16_t canardMcanTransmit(volatile CanardMcan* interface, const CanardCANFrame*
 }
 
 int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFrame* const frame, const bool can_fd, const bool extended_id) {
-	#if !CANARD_MCAN_FD_SUPPORT
-	if (can_fd) {
-		return CANARD_MCAN_STATUS_NO_FD_SUPPORT;
-	}
-	#endif
-	
 	uint8_t dlc = 0;
 	uint16_t ret = dlc_from_data_len(frame->data_len, &dlc);
 	if (ret != CANARD_MCAN_STATUS_OK) {
@@ -266,13 +267,8 @@ volatile CANARD_MCAN_MESSAGE_RAM* message_ram(const CanardMcan* const interface)
 
 void canardMcanInitializeMessageRam(volatile CanardMcan* interface) {
 	/* Configure size of rx and tx buffers (including Rx-FIFO) */
-	#if CANARD_MCAN_FRAME_DATA_LENGTH == 8
-	interface->RXESC = MCAN_RXESC_F0DS(000) | MCAN_RXESC_F1DS(000) | MCAN_RXESC_RBDS(000);
-	#elif CANARD_MCAN_FRAME_DATA_LENGTH == 64
-	interface->RXESC = MCAN_RXESC_F0DS(111) | MCAN_RXESC_F1DS(111) | MCAN_RXESC_RBDS(111);
-	#else
-	#error "Unsupported frame data length"
-	#endif
+	interface->RXESC = MCAN_RXESC_F0DS(7) | MCAN_RXESC_F1DS(7) | MCAN_RXESC_RBDS(7);
+	interface->TXESC = MCAN_TXESC_TBDS(7);
 	
 	CANARD_MCAN_MESSAGE_RAM* interface_message_ram = message_ram(interface);
 	
@@ -295,8 +291,15 @@ void canardMcanInitializeMessageRam(volatile CanardMcan* interface) {
 	interface->TXBC = ((uint32_t) interface_message_ram->tx_buffers & MCAN_TXBC_TBSA_Msk) | MCAN_TXBC_TFQS(CANARD_MCAN_TX_BUFFER_SIZE) | MCAN_TXBC_TFQM;
 }
 
-void canardMcanInitializeTiming(volatile CanardMcan* interface, struct CanardMcanTimingConfiguration const timing) {
-	interface->NBTP = (MCAN_NBTP_NTSEG2(timing.seg2) | MCAN_NBTP_NTSEG1(timing.seg1) | MCAN_NBTP_NBRP(timing.brp) | MCAN_NBTP_NSJW(timing.sjw) ); //mcan set baudrate
+void canardMcanInitializeTiming(
+	volatile CanardMcan* interface, 
+	struct CanardMcanTimingConfiguration const timing, 
+	struct CanardMcanDataTimingConfiguration const data_timing,
+	struct CanardMcanTransmitterDelayCompensationConfiguration const transmitter_delay_compensation
+) {
+	interface->NBTP = (MCAN_NBTP_NTSEG2(timing.seg2) | MCAN_NBTP_NTSEG1(timing.seg1) | MCAN_NBTP_NBRP(timing.brp) | MCAN_NBTP_NSJW(timing.sjw) );
+	interface->DBTP = (MCAN_DBTP_DSJW(data_timing.sjw) | MCAN_DBTP_DTSEG2(data_timing.seg2) | MCAN_DBTP_DTSEG1(data_timing.seg1) | MCAN_DBTP_DBRP(data_timing.brp) | MCAN_DBTP_TDC );
+	interface->TDCR = (MCAN_TDCR_TDCO(transmitter_delay_compensation.tdco) | MCAN_TDCR_TDCF(transmitter_delay_compensation.tdcf));
 }
 
 void canardMcanInitializeInterrupts(volatile CanardMcan* interface, struct CanardMcanInterruptConfiguration const interrupts) {
