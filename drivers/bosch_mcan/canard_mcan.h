@@ -50,17 +50,8 @@ enum CanardMcanStatusCode {
 	/* Supported data lengths are 0-8 and also 12, 16, 20, 24, 32, 48, 64 if compiled with FD support */
 	CANARD_MCAN_STATUS_UNSUPPORTED_DATA_LENGTH = -2,
 	
-	/* Found a CAN2.0A (Base-ID) frame when something else was expected */
-	CANARD_MCAN_STATUS_UNEXPECTED_BASE_ID_2_FRAME = -4,
-
-	/* Found a CAN2.0B (Extended-ID) frame when something else was expected */
-	CANARD_MCAN_STATUS_UNEXPECTED_EXTENDED_ID_2_FRAME = -5,
-	
 	/* Found a CAN-FD Base-ID frame when something else was expected */
-	CANARD_MCAN_STATUS_UNEXPECTED_BASE_ID_FD_FRAME = -6,
-	
-	/* Found a CAN-FD Extended-ID frame when something else was expected */
-	CANARD_MCAN_STATUS_UNEXPECTED_EXTENDED_ID_FD_FRAME = -7,
+	CANARD_MCAN_STATUS_UNEXPECTED_FD_FRAME = -4,
 };
 
 /* Defines the bit rate for the CAN and CAN-FD header and data bit rate for CAN transmission */
@@ -194,11 +185,11 @@ int16_t canardMcanInit(volatile CanardMcan* interface, struct CanardMcanConfigur
 /* Transmit a CanardCANFrame as a CAN2.0B frame */ 
 int16_t canardMcanTransmit(volatile CanardMcan* interface, const CanardCANFrame* const frame);
 
-/* A more general transmit function that allows transmitting FD frames or frames with base ID (!extended_id).
+/* A more general transmit function that allows transmitting both CAN-2.0 frames and CAN-FD frames.
  *
  * If `can_fd` is set, frame.data_len must be less than or equal 64 and be a supported `data_len` (1..8, 12, 16, 20, 24, 32, 48 or 64).
  */ 
-int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFrame* const frame, const bool can_fd, const bool extended_id);
+int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFrame* const frame, const bool can_fd);
 
 /* A simple can receive function suitable when only CAN2.0B frames will be accepted by the filters.
  * 
@@ -206,8 +197,8 @@ int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFram
  */
 int16_t canardMcanReceive(volatile CanardMcan* interface, CanardCANFrame* frame);
 
-/* A more general receive function that allows receiving FD frames or frames with base ID (!extended_id). */
-int16_t canardMcanReceiveAs(volatile CanardMcan* interface, CanardCANFrame* frame, bool* can_fd, bool* extended_id );
+/* A more general receive function that allows receiving FD frames. */
+int16_t canardMcanReceiveAs(volatile CanardMcan* interface, CanardCANFrame* frame, bool* can_fd);
 
 /* Read the interrupt status register and sets `interrupts` accordingly */
 void canardMcanReadInterruptStatus(volatile CanardMcan* interface, struct CanardMcanInterrupts* interrupts);
