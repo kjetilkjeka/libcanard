@@ -28,20 +28,20 @@ void canardMcanInitializeInterrupts(volatile CanardMcan* interface, struct Canar
 int16_t canardMcanInit(volatile CanardMcan* interface, struct CanardMcanConfiguration const config) {
 	
 	/* Start configuration. */
-	interface->CCCR |= MCAN_CCCR_INIT;
-	interface->CCCR |= MCAN_CCCR_CCE;
+	interface->CCCR |= CANARD_MCAN_CCCR_INIT;
+	interface->CCCR |= CANARD_MCAN_CCCR_CCE;
 
-	interface->CCCR |= MCAN_CCCR_FDOE | MCAN_CCCR_BRSE;
+	interface->CCCR |= CANARD_MCAN_CCCR_FDOE | CANARD_MCAN_CCCR_BRSE;
 	
 	canardMcanInitializeTiming(interface, config.timing, config.data_timing, config.transmitter_delay_compensation);
 	canardMcanInitializeMessageRam(interface);
 	canardMcanInitializeInterrupts(interface, config.interrupts);
 
 	/* Finish configuration */
-	interface->CCCR &= ~MCAN_CCCR_INIT;
+	interface->CCCR &= ~CANARD_MCAN_CCCR_INIT;
 	
 	/* Wait for can-bus sync */ 
-	while (interface->CCCR & MCAN_CCCR_INIT);
+	while (interface->CCCR & CANARD_MCAN_CCCR_INIT);
 	
 	return CANARD_MCAN_STATUS_OK;
 }
@@ -59,15 +59,15 @@ int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFram
 		return ret;
 	}
 	
-	if (interface->TXFQS & MCAN_TXFQS_TFQF) {
+	if (interface->TXFQS & CANARD_MCAN_TXFQS_TFQF) {
 		return CANARD_MCAN_STATUS_BUFFER_FULL;	
 	};
 	
-	uint32_t put_index = (interface->TXFQS & MCAN_TXFQS_TFQPI_Msk) >> MCAN_TXFQS_TFQPI_Pos; // FIXME: put_index has to be calculated from TXBRP to assure correct sequencing for uavcan.
+	uint32_t put_index = (interface->TXFQS & CANARD_MCAN_TXFQS_TFQPI_Msk) >> CANARD_MCAN_TXFQS_TFQPI_Pos; // FIXME: put_index has to be calculated from TXBRP to assure correct sequencing for uavcan.
 	volatile CANARD_MCAN_MESSAGE_RAM* interface_message_ram = message_ram(interface);
 	
-	interface_message_ram->tx_buffers[put_index].T0 = (extended_id ? MCAN_MESSAGE_TX_BUFFER_T0_XTD | MCAN_MESSAGE_TX_BUFFER_T0_ID_EXTENDED(frame->id) : MCAN_MESSAGE_TX_BUFFER_T0_ID_BASE(frame->id));
-	interface_message_ram->tx_buffers[put_index].T1 = (can_fd ? (MCAN_MESSAGE_TX_BUFFER_T1_FDF | MCAN_MESSAGE_TX_BUFFER_T1_BRS) : 0) | MCAN_MESSAGE_TX_BUFFER_T1_DLC(dlc);
+	interface_message_ram->tx_buffers[put_index].T0 = (extended_id ? CANARD_MCAN_MESSAGE_TX_BUFFER_T0_XTD | CANARD_MCAN_MESSAGE_TX_BUFFER_T0_ID_EXTENDED(frame->id) : CANARD_MCAN_MESSAGE_TX_BUFFER_T0_ID_BASE(frame->id));
+	interface_message_ram->tx_buffers[put_index].T1 = (can_fd ? (CANARD_MCAN_MESSAGE_TX_BUFFER_T1_FDF | CANARD_MCAN_MESSAGE_TX_BUFFER_T1_BRS) : 0) | CANARD_MCAN_MESSAGE_TX_BUFFER_T1_DLC(dlc);
 	
 	for (int i=0; i <= frame->data_len; i++) {
 		interface_message_ram->tx_buffers[put_index].data[i] = frame->data[i];
@@ -93,22 +93,22 @@ int16_t canardMcanReceive(volatile CanardMcan* interface, CanardCANFrame* const 
 
 int16_t canardMcanReceiveAs(volatile CanardMcan* interface, CanardCANFrame* frame, bool* can_fd ) {
 	// This function assumes that only RX fifo 0 is in use.
-	if (((interface->RXF0S & MCAN_RXF0S_F0FL_Msk) >> MCAN_RXF0S_F0FL_Pos) == 0) { // If Rx fifo empty
+	if (((interface->RXF0S & CANARD_MCAN_RXF0S_F0FL_Msk) >> CANARD_MCAN_RXF0S_F0FL_Pos) == 0) { // If Rx fifo empty
 		return CANARD_MCAN_STATUS_BUFFER_EMPTY;
 	}
 	
-	uint32_t get_index = ((interface->RXF0S & MCAN_RXF0S_F0GI_Msk) >> MCAN_RXF0S_F0GI_Pos);
+	uint32_t get_index = ((interface->RXF0S & CANARD_MCAN_RXF0S_F0GI_Msk) >> CANARD_MCAN_RXF0S_F0GI_Pos);
 	volatile CANARD_MCAN_MESSAGE_RAM* interface_message_ram = message_ram(interface);
 	
-	*can_fd = (interface_message_ram->rx_fifo0[get_index].R1 & MCAN_MESSAGE_RX_BUFFER_R1_FDF_Msk) >> MCAN_MESSAGE_RX_BUFFER_R1_FDF_Pos;
-	bool extended_id = (interface_message_ram->rx_fifo0[get_index].R0 & MCAN_MESSAGE_RX_BUFFER_R0_XTD_Msk) >> MCAN_MESSAGE_RX_BUFFER_R0_XTD_Pos;
+	*can_fd = (interface_message_ram->rx_fifo0[get_index].R1 & CANARD_MCAN_MESSAGE_RX_BUFFER_R1_FDF_Msk) >> CANARD_MCAN_MESSAGE_RX_BUFFER_R1_FDF_Pos;
+	bool extended_id = (interface_message_ram->rx_fifo0[get_index].R0 & CANARD_MCAN_MESSAGE_RX_BUFFER_R0_XTD_Msk) >> CANARD_MCAN_MESSAGE_RX_BUFFER_R0_XTD_Pos;
 	
 	if (extended_id) {
-		frame->id = (interface_message_ram->rx_fifo0[get_index].R0 & MCAN_MESSAGE_RX_BUFFER_R0_ID_EXTENDED_Msk) >> MCAN_MESSAGE_RX_BUFFER_R0_ID_EXTENDED_Pos;
+		frame->id = (interface_message_ram->rx_fifo0[get_index].R0 & CANARD_MCAN_MESSAGE_RX_BUFFER_R0_ID_EXTENDED_Msk) >> CANARD_MCAN_MESSAGE_RX_BUFFER_R0_ID_EXTENDED_Pos;
 	} else {
-		frame->id = (interface_message_ram->rx_fifo0[get_index].R0 & MCAN_MESSAGE_RX_BUFFER_R0_ID_BASE_Msk) >> MCAN_MESSAGE_RX_BUFFER_R0_ID_BASE_Pos;
+		frame->id = (interface_message_ram->rx_fifo0[get_index].R0 & CANARD_MCAN_MESSAGE_RX_BUFFER_R0_ID_BASE_Msk) >> CANARD_MCAN_MESSAGE_RX_BUFFER_R0_ID_BASE_Pos;
 	}
-	uint8_t dlc = (interface_message_ram->rx_fifo0[get_index].R1 & MCAN_MESSAGE_RX_BUFFER_R1_DLC_Msk) >> MCAN_MESSAGE_RX_BUFFER_R1_DLC_Pos;
+	uint8_t dlc = (interface_message_ram->rx_fifo0[get_index].R1 & CANARD_MCAN_MESSAGE_RX_BUFFER_R1_DLC_Msk) >> CANARD_MCAN_MESSAGE_RX_BUFFER_R1_DLC_Pos;
 	
 	data_len_from_dlc(dlc, &(frame->data_len));
 	if (extended_id) {
@@ -127,18 +127,18 @@ int16_t canardMcanReceiveAs(volatile CanardMcan* interface, CanardCANFrame* fram
 void canardMcanReadInterruptStatus(volatile CanardMcan* interface, struct CanardMcanInterrupts* interrupts) {
 	uint32_t ir = interface->IR;
 
-	interrupts->receive_fifo_0_new_message = (ir | MCAN_IR_RF0N) != 0;
-	interrupts->receive_fifo_0_watermark_reached = (ir | MCAN_IR_RF0W) != 0;
-	interrupts->receive_fifo_0_full = (ir | MCAN_IR_RF0F) != 0;
-	interrupts->receive_fifo_0_message_lost = (ir | MCAN_IR_RF0L) != 0;
+	interrupts->receive_fifo_0_new_message = (ir | CANARD_MCAN_IR_RF0N) != 0;
+	interrupts->receive_fifo_0_watermark_reached = (ir | CANARD_MCAN_IR_RF0W) != 0;
+	interrupts->receive_fifo_0_full = (ir | CANARD_MCAN_IR_RF0F) != 0;
+	interrupts->receive_fifo_0_message_lost = (ir | CANARD_MCAN_IR_RF0L) != 0;
 }
 
 void canardMcanClearInterruptStatus(volatile CanardMcan* interface, const struct CanardMcanInterrupts* interrupts) {
 	interface->IR = 
-		(interrupts->receive_fifo_0_new_message ? MCAN_IR_RF0N : 0) |
-		(interrupts->receive_fifo_0_watermark_reached ? MCAN_IR_RF0W : 0) |
-		(interrupts->receive_fifo_0_full ? MCAN_IR_RF0F : 0) |
-		(interrupts->receive_fifo_0_message_lost ? MCAN_IR_RF0L : 0);
+		(interrupts->receive_fifo_0_new_message ? CANARD_MCAN_IR_RF0N : 0) |
+		(interrupts->receive_fifo_0_watermark_reached ? CANARD_MCAN_IR_RF0W : 0) |
+		(interrupts->receive_fifo_0_full ? CANARD_MCAN_IR_RF0F : 0) |
+		(interrupts->receive_fifo_0_message_lost ? CANARD_MCAN_IR_RF0L : 0);
 }
 
 
@@ -270,8 +270,8 @@ volatile CANARD_MCAN_MESSAGE_RAM* message_ram(const CanardMcan* const interface)
 
 void canardMcanInitializeMessageRam(volatile CanardMcan* interface) {
 	/* Configure size of rx and tx buffers (including Rx-FIFO) */
-	interface->RXESC = MCAN_RXESC_F0DS(7) | MCAN_RXESC_F1DS(7) | MCAN_RXESC_RBDS(7);
-	interface->TXESC = MCAN_TXESC_TBDS(7);
+	interface->RXESC = CANARD_MCAN_RXESC_F0DS(7) | CANARD_MCAN_RXESC_F1DS(7) | CANARD_MCAN_RXESC_RBDS(7);
+	interface->TXESC = CANARD_MCAN_TXESC_TBDS(7);
 	
 	CANARD_MCAN_MESSAGE_RAM* interface_message_ram = message_ram(interface);
 	
@@ -285,13 +285,13 @@ void canardMcanInitializeMessageRam(volatile CanardMcan* interface) {
 	
 	/* No standard ID filters, Rx-fifo1, Rx-buffers or Tx-Fifo, only Rx-FIFO0 and Tx-Buffer are used for this application */
 	/* Configure extended ID filter buffer */
-	interface->XIDFC = ((uint32_t) interface_message_ram->extended_filters & MCAN_XIDFC_FLESA_Msk) | MCAN_XIDFC_LSE(CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE);
+	interface->XIDFC = ((uint32_t) interface_message_ram->extended_filters & CANARD_MCAN_XIDFC_FLESA_Msk) | CANARD_MCAN_XIDFC_LSE(CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE);
 	
 	/* Configure Fifo 0 */
-	interface->RXF0C = ((uint32_t) interface_message_ram->rx_fifo0 & MCAN_RXF0C_F0SA_Msk) | MCAN_RXF0C_F0S(CANARD_MCAN_RX_FIFO_SIZE);
+	interface->RXF0C = ((uint32_t) interface_message_ram->rx_fifo0 & CANARD_MCAN_RXF0C_F0SA_Msk) | CANARD_MCAN_RXF0C_F0S(CANARD_MCAN_RX_FIFO_SIZE);
 		
 	/* Configure Tx-buffers */
-	interface->TXBC = ((uint32_t) interface_message_ram->tx_buffers & MCAN_TXBC_TBSA_Msk) | MCAN_TXBC_TFQS(CANARD_MCAN_TX_BUFFER_SIZE) | MCAN_TXBC_TFQM;
+	interface->TXBC = ((uint32_t) interface_message_ram->tx_buffers & CANARD_MCAN_TXBC_TBSA_Msk) | CANARD_MCAN_TXBC_TFQS(CANARD_MCAN_TX_BUFFER_SIZE) | CANARD_MCAN_TXBC_TFQM;
 }
 
 void canardMcanInitializeTiming(
@@ -300,26 +300,26 @@ void canardMcanInitializeTiming(
 	struct CanardMcanDataTimingConfiguration const data_timing,
 	struct CanardMcanTransmitterDelayCompensationConfiguration const transmitter_delay_compensation
 ) {
-	interface->NBTP = (MCAN_NBTP_NTSEG2(timing.seg2) | MCAN_NBTP_NTSEG1(timing.seg1) | MCAN_NBTP_NBRP(timing.brp) | MCAN_NBTP_NSJW(timing.sjw) );
-	interface->DBTP = (MCAN_DBTP_DSJW(data_timing.sjw) | MCAN_DBTP_DTSEG2(data_timing.seg2) | MCAN_DBTP_DTSEG1(data_timing.seg1) | MCAN_DBTP_DBRP(data_timing.brp) | MCAN_DBTP_TDC );
-	interface->TDCR = (MCAN_TDCR_TDCO(transmitter_delay_compensation.tdco) | MCAN_TDCR_TDCF(transmitter_delay_compensation.tdcf));
+	interface->NBTP = (CANARD_MCAN_NBTP_NTSEG2(timing.seg2) | CANARD_MCAN_NBTP_NTSEG1(timing.seg1) | CANARD_MCAN_NBTP_NBRP(timing.brp) | CANARD_MCAN_NBTP_NSJW(timing.sjw) );
+	interface->DBTP = (CANARD_MCAN_DBTP_DSJW(data_timing.sjw) | CANARD_MCAN_DBTP_DTSEG2(data_timing.seg2) | CANARD_MCAN_DBTP_DTSEG1(data_timing.seg1) | CANARD_MCAN_DBTP_DBRP(data_timing.brp) | CANARD_MCAN_DBTP_TDC );
+	interface->TDCR = (CANARD_MCAN_TDCR_TDCO(transmitter_delay_compensation.tdco) | CANARD_MCAN_TDCR_TDCF(transmitter_delay_compensation.tdcf));
 }
 
 void canardMcanInitializeInterrupts(volatile CanardMcan* interface, struct CanardMcanInterruptConfiguration const interrupts) {
 	interface->ILE = 
-		(interrupts.enable_interrupt_line0 ? MCAN_ILE_EINT0 : 0) | 
-		(interrupts.enable_interrupt_line1 ? MCAN_ILE_EINT1 : 0);
+		(interrupts.enable_interrupt_line0 ? CANARD_MCAN_ILE_EINT0 : 0) | 
+		(interrupts.enable_interrupt_line1 ? CANARD_MCAN_ILE_EINT1 : 0);
 
 	interface->ILS = 
-		(interrupts.interrupt_line_select.receive_fifo_0_new_message ? MCAN_ILS_RF0NL : 0) |
-		(interrupts.interrupt_line_select.receive_fifo_0_watermark_reached ? MCAN_ILS_RF0WL : 0) |
-		(interrupts.interrupt_line_select.receive_fifo_0_full ? MCAN_ILS_RF0FL : 0) |
-		(interrupts.interrupt_line_select.receive_fifo_0_message_lost ? MCAN_ILS_RF0LL : 0);
+		(interrupts.interrupt_line_select.receive_fifo_0_new_message ? CANARD_MCAN_ILS_RF0NL : 0) |
+		(interrupts.interrupt_line_select.receive_fifo_0_watermark_reached ? CANARD_MCAN_ILS_RF0WL : 0) |
+		(interrupts.interrupt_line_select.receive_fifo_0_full ? CANARD_MCAN_ILS_RF0FL : 0) |
+		(interrupts.interrupt_line_select.receive_fifo_0_message_lost ? CANARD_MCAN_ILS_RF0LL : 0);
 
 	interface->IE = 
-		(interrupts.interrupt_enable.receive_fifo_0_new_message ? MCAN_IE_RF0NE : 0) |
-		(interrupts.interrupt_enable.receive_fifo_0_watermark_reached ? MCAN_IE_RF0WE : 0) |
-		(interrupts.interrupt_enable.receive_fifo_0_full ? MCAN_IE_RF0FE : 0) |
-		(interrupts.interrupt_enable.receive_fifo_0_message_lost ? MCAN_IE_RF0LE : 0);
+		(interrupts.interrupt_enable.receive_fifo_0_new_message ? CANARD_MCAN_IE_RF0NE : 0) |
+		(interrupts.interrupt_enable.receive_fifo_0_watermark_reached ? CANARD_MCAN_IE_RF0WE : 0) |
+		(interrupts.interrupt_enable.receive_fifo_0_full ? CANARD_MCAN_IE_RF0FE : 0) |
+		(interrupts.interrupt_enable.receive_fifo_0_message_lost ? CANARD_MCAN_IE_RF0LE : 0);
 
 }
