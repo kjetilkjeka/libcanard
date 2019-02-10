@@ -66,7 +66,7 @@ int16_t canardMcanTransmitAs(volatile CanardMcan* interface, const CanardCANFram
 	uint32_t put_index = (interface->TXFQS & MCAN_TXFQS_TFQPI_Msk) >> MCAN_TXFQS_TFQPI_Pos; // FIXME: put_index has to be calculated from TXBRP to assure correct sequencing for uavcan.
 	volatile CANARD_MCAN_MESSAGE_RAM* interface_message_ram = message_ram(interface);
 	
-	interface_message_ram->tx_buffers[put_index].T0 = (extended_id ? MCAN_MESSAGE_TX_BUFFER_T0_XTD : 0) | MCAN_MESSAGE_TX_BUFFER_T0_ID(frame->id);
+	interface_message_ram->tx_buffers[put_index].T0 = (extended_id ? MCAN_MESSAGE_TX_BUFFER_T0_XTD | MCAN_MESSAGE_TX_BUFFER_T0_ID_EXTENDED(frame->id) : MCAN_MESSAGE_TX_BUFFER_T0_ID_BASE(frame->id));
 	interface_message_ram->tx_buffers[put_index].T1 = (can_fd ? (MCAN_MESSAGE_TX_BUFFER_T1_FDF | MCAN_MESSAGE_TX_BUFFER_T1_BRS) : 0) | MCAN_MESSAGE_TX_BUFFER_T1_DLC(dlc);
 	
 	for (int i=0; i <= frame->data_len; i++) {
@@ -103,7 +103,11 @@ int16_t canardMcanReceiveAs(volatile CanardMcan* interface, CanardCANFrame* fram
 	*can_fd = (interface_message_ram->rx_fifo0[get_index].R1 & MCAN_MESSAGE_RX_BUFFER_R1_FDF_Msk) >> MCAN_MESSAGE_RX_BUFFER_R1_FDF_Pos;
 	bool extended_id = (interface_message_ram->rx_fifo0[get_index].R0 & MCAN_MESSAGE_RX_BUFFER_R0_XTD_Msk) >> MCAN_MESSAGE_RX_BUFFER_R0_XTD_Pos;
 	
-	frame->id = (interface_message_ram->rx_fifo0[get_index].R0 & MCAN_MESSAGE_RX_BUFFER_R0_ID_Msk) >> MCAN_MESSAGE_RX_BUFFER_R0_ID_Pos;
+	if (extended_id) {
+		frame->id = (interface_message_ram->rx_fifo0[get_index].R0 & MCAN_MESSAGE_RX_BUFFER_R0_ID_EXTENDED_Msk) >> MCAN_MESSAGE_RX_BUFFER_R0_ID_EXTENDED_Pos;
+	} else {
+		frame->id = (interface_message_ram->rx_fifo0[get_index].R0 & MCAN_MESSAGE_RX_BUFFER_R0_ID_BASE_Msk) >> MCAN_MESSAGE_RX_BUFFER_R0_ID_BASE_Pos;
+	}
 	uint8_t dlc = (interface_message_ram->rx_fifo0[get_index].R1 & MCAN_MESSAGE_RX_BUFFER_R1_DLC_Msk) >> MCAN_MESSAGE_RX_BUFFER_R1_DLC_Pos;
 	
 	data_len_from_dlc(dlc, &(frame->data_len));
