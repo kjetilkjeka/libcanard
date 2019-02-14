@@ -13,7 +13,7 @@ static volatile CANARD_MCAN_MESSAGE_RAM mcan1_message_ram;
 /* Private (helper) function declarations */
 enum CanardMcanStatusCode dlc_from_data_len(uint8_t data_len, uint8_t* dlc);
 enum CanardMcanStatusCode data_len_from_dlc(uint8_t dlc, uint8_t* data_len);
-volatile CANARD_MCAN_MESSAGE_RAM* message_ram(const CanardMcan* const interface);
+volatile CANARD_MCAN_MESSAGE_RAM* message_ram(const volatile CanardMcan* const interface);
 void canardMcanInitializeMessageRam(volatile CanardMcan* const interface);
 void canardMcanInitializeTiming(
 	volatile CanardMcan* interface, 
@@ -258,7 +258,7 @@ enum CanardMcanStatusCode data_len_from_dlc(uint8_t dlc, uint8_t* data_len) {
 	return CANARD_MCAN_STATUS_OK;
 }
 
-volatile CANARD_MCAN_MESSAGE_RAM* message_ram(const CanardMcan* const interface) {
+volatile CANARD_MCAN_MESSAGE_RAM* message_ram(const volatile CanardMcan* const interface) {
 	if (interface == CANARD_MCAN_CAN0) {
 		return &mcan0_message_ram;
 	} else if (interface == CANARD_MCAN_CAN1) {
@@ -273,7 +273,7 @@ void canardMcanInitializeMessageRam(volatile CanardMcan* interface) {
 	interface->RXESC = CANARD_MCAN_RXESC_F0DS(7) | CANARD_MCAN_RXESC_F1DS(7) | CANARD_MCAN_RXESC_RBDS(7);
 	interface->TXESC = CANARD_MCAN_TXESC_TBDS(7);
 	
-	CANARD_MCAN_MESSAGE_RAM* interface_message_ram = message_ram(interface);
+	volatile CANARD_MCAN_MESSAGE_RAM* interface_message_ram = message_ram(interface);
 	
 	/* Configure system IO bus matrix */
 	if (interface == CANARD_MCAN_CAN0) {
