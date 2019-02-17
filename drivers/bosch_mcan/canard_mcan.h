@@ -36,6 +36,14 @@ extern "C"
 	#define CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE 64
 #endif
 
+/* 
+ * Number of Standard-ID filters
+ * Each filter uses 4 bytes of static memory
+ */
+#ifndef CANARD_MCAN_STANDARD_FILTER_BUFFER_SIZE
+	#define CANARD_MCAN_STANDARD_FILTER_BUFFER_SIZE 128
+#endif
+
 /* CANx instances */
 #define CANARD_MCAN_CAN0       ((volatile CanardMcan*)0x40030000)
 #define CANARD_MCAN_CAN1       ((volatile CanardMcan*)0x40034000)
@@ -52,6 +60,8 @@ enum CanardMcanStatusCode {
 	
 	/* Found a CAN-FD Base-ID frame when something else was expected */
 	CANARD_MCAN_STATUS_UNEXPECTED_FD_FRAME = -4,
+
+	CANARD_MCAN_INVALID_FILTER_INDEX = -6,
 };
 
 /* Defines the bit rate for the CAN and CAN-FD header and data bit rate for CAN transmission */
@@ -111,7 +121,21 @@ struct CanardMcanInterruptConfiguration {
      * 0: Disables the corresponding interrupt.
      * 1: Enables the corresponding interrupt
      */
-	struct CanardMcanInterrupts interrupt_enable;	
+	struct CanardMcanInterrupts interrupt_enable;
+};
+
+struct CanardMcanFilterConfiguration {
+	/* Use filter for extended frames if true, accept all extended frames if false 
+	 * 
+	 * Filters are configured to reject all by default.
+	 */
+	bool enable_extended_frames;
+
+	/* Use filter for base frames if true, accept all base frames if false 
+	 *
+	 * Filters are configured to reject all by default.
+	 */
+	bool enable_standard_frames;
 };
 
 struct CanardMcanConfiguration {
@@ -119,6 +143,7 @@ struct CanardMcanConfiguration {
 	struct CanardMcanDataTimingConfiguration data_timing;
 	struct CanardMcanTransmitterDelayCompensationConfiguration transmitter_delay_compensation;
 	struct CanardMcanInterruptConfiguration interrupts;
+	struct CanardMcanFilterConfiguration filter;
 };
  
 typedef struct {
@@ -205,6 +230,18 @@ void canardMcanReadInterruptStatus(volatile CanardMcan* interface, struct Canard
 
 /* Clear interrupt flag for interrupts set in `interrupts` */
 void canardMcanClearInterruptStatus(volatile CanardMcan* interface, const struct CanardMcanInterrupts* interrupts);
+
+/* Sets an "old fashion" mask filter on extended IDs on a specific filter index (not shared with standard ID indexes) */
+int16_t canardMcanFilterSetExtendedMask(volatile CanardMcan* interface, uint8_t index, uint32_t filter, uint32_t mask);
+
+/* Sets an "old fashion" mask filter on standard IDs on a specific filter index (not shared with extended ID indexes) */
+int16_t canardMcanFilterSetStandardMask(volatile CanardMcan* interface, uint8_t index, uint16_t filter, uint16_t mask);
+
+/* Disable the filter on the corresponding extended filter index */
+int16_t canardMcanFilterDisableExtended(volatile CanardMcan* interface, uint8_t index);
+
+/* Disable the filter on the corresponding standard filter index */
+int16_t canardMcanFilterDisableStandard(volatile CanardMcan* interface, uint8_t index);
 
 /* Parameters not setable from the application code */
 #define CANARD_MCAN_TX_BUFFER_SIZE_MAX 32

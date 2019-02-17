@@ -39,6 +39,9 @@ int16_t canardMcanInit(volatile CanardMcan* interface, struct CanardMcanConfigur
 
 	/* Finish configuration */
 	interface->CCCR &= ~CANARD_MCAN_CCCR_INIT;
+
+	interface->GFC = (config.filter.enable_standard_frames ? CANARD_MCAN_GFC_ANFS(2) : CANARD_MCAN_GFC_ANFS(0))
+					| (config.filter.enable_extended_frames ? CANARD_MCAN_GFC_ANFE(2) : CANARD_MCAN_GFC_ANFE(0));
 	
 	/* Wait for can-bus sync */ 
 	while (interface->CCCR & CANARD_MCAN_CCCR_INIT);
@@ -139,6 +142,47 @@ void canardMcanClearInterruptStatus(volatile CanardMcan* interface, const struct
 		(interrupts->receive_fifo_0_watermark_reached ? CANARD_MCAN_IR_RF0W : 0) |
 		(interrupts->receive_fifo_0_full ? CANARD_MCAN_IR_RF0F : 0) |
 		(interrupts->receive_fifo_0_message_lost ? CANARD_MCAN_IR_RF0L : 0);
+}
+
+int16_t canardMcanFilterSetExtendedMask(volatile CanardMcan* interface, uint8_t index, uint32_t filter, uint32_t mask) {
+	if (index > CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE) {
+		return CANARD_MCAN_INVALID_FILTER_INDEX;
+	}
+
+	message_ram(interface)->extended_filters[index].F0 = CANARD_MCAN_MESSAGE_XF_BUFFER_F0_EFEC(1)
+	                                                   | CANARD_MCAN_MESSAGE_XF_BUFFER_F0_EFID1(filter);
+
+	message_ram(interface)->extended_filters[index].F1 = CANARD_MCAN_MESSAGE_XF_BUFFER_F1_EFT(2)
+	                                                   | CANARD_MCAN_MESSAGE_XF_BUFFER_F1_EFID2(mask);
+
+}
+
+int16_t canardMcanFilterSetStandardMask(volatile CanardMcan* interface, uint8_t index, uint16_t filter, uint16_t mask) {
+	if (index > CANARD_MCAN_STANDARD_FILTER_BUFFER_SIZE) {
+		return CANARD_MCAN_INVALID_FILTER_INDEX;
+	}
+
+	message_ram(interface)->standard_filters[index].S0 = CANARD_MCAN_MESSAGE_SF_BUFFER_S0_SFEC(1)
+	                                                   | CANARD_MCAN_MESSAGE_SF_BUFFER_S0_SFID1(filter)
+	                                                   | CANARD_MCAN_MESSAGE_SF_BUFFER_S0_SFT(2)
+	                                                   | CANARD_MCAN_MESSAGE_SF_BUFFER_S0_SFID2(mask);
+}
+
+int16_t canardMcanFilterDisableExtended(volatile CanardMcan* interface, uint8_t index) {
+	if (index > CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE) {
+		return CANARD_MCAN_INVALID_FILTER_INDEX;
+	}
+
+	message_ram(interface)->extended_filters[index].F0 = CANARD_MCAN_MESSAGE_XF_BUFFER_F0_EFEC(0);
+}
+
+int16_t canardMcanFilterDisableStandard(volatile CanardMcan* interface, uint8_t index) {
+	if (index > CANARD_MCAN_STANDARD_FILTER_BUFFER_SIZE) {
+		return CANARD_MCAN_INVALID_FILTER_INDEX;
+	}
+
+	message_ram(interface)->standard_filters[index].S0 = CANARD_MCAN_MESSAGE_SF_BUFFER_S0_SFEC(0);
+
 }
 
 
@@ -286,6 +330,9 @@ void canardMcanInitializeMessageRam(volatile CanardMcan* interface) {
 	/* No standard ID filters, Rx-fifo1, Rx-buffers or Tx-Fifo, only Rx-FIFO0 and Tx-Buffer are used for this application */
 	/* Configure extended ID filter buffer */
 	interface->XIDFC = ((uint32_t) interface_message_ram->extended_filters & CANARD_MCAN_XIDFC_FLESA_Msk) | CANARD_MCAN_XIDFC_LSE(CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE);
+
+	/* Configure standard ID filter buffer */
+	interface->SIDFC = ((uint32_t) interface_message_ram->standard_filters & CANARD_MCAN_SIDFC_FLSSA_Msk) | CANARD_MCAN_XIDFC_LSE(CANARD_MCAN_STANDARD_FILTER_BUFFER_SIZE);
 	
 	/* Configure Fifo 0 */
 	interface->RXF0C = ((uint32_t) interface_message_ram->rx_fifo0 & CANARD_MCAN_RXF0C_F0SA_Msk) | CANARD_MCAN_RXF0C_F0S(CANARD_MCAN_RX_FIFO_SIZE);
