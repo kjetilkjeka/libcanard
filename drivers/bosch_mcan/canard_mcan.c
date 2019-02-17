@@ -37,11 +37,11 @@ int16_t canardMcanInit(volatile CanardMcan* interface, struct CanardMcanConfigur
 	canardMcanInitializeMessageRam(interface);
 	canardMcanInitializeInterrupts(interface, config.interrupts);
 
-	/* Finish configuration */
-	interface->CCCR &= ~CANARD_MCAN_CCCR_INIT;
-
 	interface->GFC = (config.filter.enable_standard_frames ? CANARD_MCAN_GFC_ANFS(2) : CANARD_MCAN_GFC_ANFS(0))
 					| (config.filter.enable_extended_frames ? CANARD_MCAN_GFC_ANFE(2) : CANARD_MCAN_GFC_ANFE(0));
+
+    /* Finish configuration */
+	interface->CCCR &= ~CANARD_MCAN_CCCR_INIT;
 	
 	/* Wait for can-bus sync */ 
 	while (interface->CCCR & CANARD_MCAN_CCCR_INIT);
@@ -332,7 +332,7 @@ void canardMcanInitializeMessageRam(volatile CanardMcan* interface) {
 	interface->XIDFC = ((uint32_t) interface_message_ram->extended_filters & CANARD_MCAN_XIDFC_FLESA_Msk) | CANARD_MCAN_XIDFC_LSE(CANARD_MCAN_EXTENDED_FILTER_BUFFER_SIZE);
 
 	/* Configure standard ID filter buffer */
-	interface->SIDFC = ((uint32_t) interface_message_ram->standard_filters & CANARD_MCAN_SIDFC_FLSSA_Msk) | CANARD_MCAN_XIDFC_LSE(CANARD_MCAN_STANDARD_FILTER_BUFFER_SIZE);
+	interface->SIDFC = ((uint32_t) interface_message_ram->standard_filters & CANARD_MCAN_SIDFC_FLSSA_Msk) | CANARD_MCAN_SIDFC_LSS(CANARD_MCAN_STANDARD_FILTER_BUFFER_SIZE);
 	
 	/* Configure Fifo 0 */
 	interface->RXF0C = ((uint32_t) interface_message_ram->rx_fifo0 & CANARD_MCAN_RXF0C_F0SA_Msk) | CANARD_MCAN_RXF0C_F0S(CANARD_MCAN_RX_FIFO_SIZE);
