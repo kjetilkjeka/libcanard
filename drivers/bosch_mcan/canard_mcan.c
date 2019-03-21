@@ -154,7 +154,8 @@ int16_t canardMcanFilterSetExtendedMask(volatile CanardMcan* interface, uint8_t 
 
 	message_ram(interface)->extended_filters[index].F1 = CANARD_MCAN_MESSAGE_XF_BUFFER_F1_EFT(2)
 	                                                   | CANARD_MCAN_MESSAGE_XF_BUFFER_F1_EFID2(mask);
-
+    
+    return CANARD_MCAN_STATUS_OK;
 }
 
 int16_t canardMcanFilterSetStandardMask(volatile CanardMcan* interface, uint8_t index, uint16_t filter, uint16_t mask) {
@@ -166,6 +167,8 @@ int16_t canardMcanFilterSetStandardMask(volatile CanardMcan* interface, uint8_t 
 	                                                   | CANARD_MCAN_MESSAGE_SF_BUFFER_S0_SFID1(filter)
 	                                                   | CANARD_MCAN_MESSAGE_SF_BUFFER_S0_SFT(2)
 	                                                   | CANARD_MCAN_MESSAGE_SF_BUFFER_S0_SFID2(mask);
+                                                       
+    return CANARD_MCAN_STATUS_OK;
 }
 
 int16_t canardMcanFilterDisableExtended(volatile CanardMcan* interface, uint8_t index) {
@@ -174,6 +177,8 @@ int16_t canardMcanFilterDisableExtended(volatile CanardMcan* interface, uint8_t 
 	}
 
 	message_ram(interface)->extended_filters[index].F0 = CANARD_MCAN_MESSAGE_XF_BUFFER_F0_EFEC(0);
+    
+    return CANARD_MCAN_STATUS_OK;
 }
 
 int16_t canardMcanFilterDisableStandard(volatile CanardMcan* interface, uint8_t index) {
@@ -182,7 +187,8 @@ int16_t canardMcanFilterDisableStandard(volatile CanardMcan* interface, uint8_t 
 	}
 
 	message_ram(interface)->standard_filters[index].S0 = CANARD_MCAN_MESSAGE_SF_BUFFER_S0_SFEC(0);
-
+    
+    return CANARD_MCAN_STATUS_OK;
 }
 
 
